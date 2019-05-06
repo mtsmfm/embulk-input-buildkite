@@ -1,3 +1,8 @@
+# 0.4.0
+
+- Add retry
+- Add artifact_download_concurrency option
+
 # 0.3.0
 
 - Add artifacts

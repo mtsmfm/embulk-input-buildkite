@@ -15,6 +15,7 @@ Fetch Buildkite build results
 - **pipeline_slug**: Target pipeline name like `rails` (string, required)
 - **build_nums**: Build numbers (Array of integer, required)
 - **token**: Buildkite API token which can be found on https://buildkite.com/user/api-access-tokens (string, required)
+- **artifact_download_concurrency**: Artifact download concurrency (integer, optional, default: 10)
 
 ## Example
 

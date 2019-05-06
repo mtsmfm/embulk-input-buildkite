@@ -4,13 +4,17 @@ module Embulk
   module Input
 
     class Buildkite < InputPlugin
+      MAX_RETRY = 5
+
       class Logger
         def initialize(embulk_logger)
           @embulk_logger = embulk_logger
         end
 
-        def info(message)
-          @embulk_logger.info("embulk-input-buildkite: #{message}")
+        %w(info warn error).each do |m|
+          define_method(m) do |message|
+            @embulk_logger.send(m, "embulk-input-buildkite: #{message}")
+          end
         end
       end
 
@@ -22,7 +26,8 @@ module Embulk
           "org_slug" => config.param("org_slug", :string),
           "pipeline_slug" => config.param("pipeline_slug", :string),
           "build_nums" => config.param("build_nums", :array),
-          "token" => config.param("token", :string, nil),
+          "token" => config.param("token", :string),
+          "artifact_download_concurrency" => config.param("artifact_download_concurrency", :integer, default: 10),
         }
 
         columns = [
@@ -63,14 +68,25 @@ module Embulk
         task['build_nums'].each do |build_num|
           logger.info("Start build_num:[#{build_num}]")
 
-          build = client.fetch_build(number: build_num)
+          build = with_retry { client.fetch_build(number: build_num) }
           build[:jobs].each do |job|
             logger.info("Start Start job_id:[#{job[:id]}]")
-            log = client.fetch_log(build_number: job[:build_number], job_id: job[:id])
-            artifacts = client.fetch_artifacts(build_number: job[:build_number], job_id: job[:id])
-            artifacts.each do |artifact|
-              artifact.merge!(body: client.fetch_artifact(build_number: job[:build_number], job_id: job[:id], artifact_id: artifact[:id]))
+            log = with_retry { client.fetch_log(build_number: job[:build_number], job_id: job[:id]) }
+            artifacts = with_retry { client.fetch_artifacts(build_number: job[:build_number], job_id: job[:id]) }
+
+            queue = Queue.new
+            artifacts.each {|a| queue.push(a) }
+            workers = Array.new(task['artifact_download_concurrency']) do
+              Thread.new do
+                begin
+                  while artifact = queue.pop(true)
+                    artifact[:body] = with_retry { client.fetch_artifact(build_number: job[:build_number], job_id: job[:id], artifact_id: artifact[:id]) }
+                  end
+                rescue ThreadError
+                end
+              end
             end
+            workers.each(&:join)
 
             page_builder.add([
               job[:id],
@@ -100,6 +116,24 @@ module Embulk
 
       def logger
         @logger ||= Logger.new(Embulk.logger)
+      end
+
+      def with_retry(&block)
+        retries = 0
+        begin
+          yield
+        rescue => e
+          sleep retries
+
+          if retries < MAX_RETRY
+            retries += 1
+            logger.warn("retry ##{retries}, #{e.message}")
+            retry
+          else
+            logger.error("retry exhausted ##{retries}, #{e.message}")
+            raise e
+          end
+        end
       end
     end
 
