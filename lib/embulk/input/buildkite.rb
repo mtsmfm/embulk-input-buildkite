@@ -29,9 +29,10 @@ module Embulk
           Column.new(0, "id", :long),
           Column.new(1, "data", :string),
           Column.new(2, "log", :string),
-          Column.new(3, "started_at", :timestamp),
-          Column.new(4, "build_number", :long),
-          Column.new(5, "build_data", :string),
+          Column.new(3, "artifacts", :string),
+          Column.new(4, "started_at", :timestamp),
+          Column.new(5, "build_number", :long),
+          Column.new(6, "build_data", :string),
         ]
 
         resume(task, columns, 1, &control)
@@ -65,12 +66,17 @@ module Embulk
           build = client.fetch_build(number: build_num)
           build[:jobs].each do |job|
             logger.info("Start Start job_id:[#{job[:id]}]")
-            log = client.fetch_log(build_number: job[:build_number], job_id: job[:id])[:output]
+            log = client.fetch_log(build_number: job[:build_number], job_id: job[:id])
+            artifacts = client.fetch_artifacts(build_number: job[:build_number], job_id: job[:id])
+            artifacts.each do |artifact|
+              artifact.merge!(body: client.fetch_artifact(build_number: job[:build_number], job_id: job[:id], artifact_id: artifact[:id]))
+            end
 
             page_builder.add([
               job[:id],
               job.to_json,
-              log,
+              log.to_json,
+              artifacts.to_json,
               job[:started_at],
               job[:build_number],
               build.to_json,
