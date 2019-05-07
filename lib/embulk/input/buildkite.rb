@@ -31,7 +31,7 @@ module Embulk
         }
 
         columns = [
-          Column.new(0, "id", :long),
+          Column.new(0, "id", :string),
           Column.new(1, "data", :string),
           Column.new(2, "log", :string),
           Column.new(3, "artifacts", :string),
