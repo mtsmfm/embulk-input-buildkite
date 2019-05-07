@@ -1,3 +1,9 @@
+# 0.5.0
+
+- started_at -> created_at
+  - for some reason started_at can be null https://buildkite.com/rails/rails/builds/61004.json
+- Fix log message
+
 # 0.4.1
 
 - id should be string

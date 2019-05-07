@@ -35,7 +35,7 @@ module Embulk
           Column.new(1, "data", :string),
           Column.new(2, "log", :string),
           Column.new(3, "artifacts", :string),
-          Column.new(4, "started_at", :timestamp),
+          Column.new(4, "created_at", :timestamp),
           Column.new(5, "build_number", :long),
           Column.new(6, "build_data", :string),
         ]
@@ -70,7 +70,7 @@ module Embulk
 
           build = with_retry { client.fetch_build(number: build_num) }
           build[:jobs].each do |job|
-            logger.info("Start Start job_id:[#{job[:id]}]")
+            logger.info("Start job_id:[#{job[:id]}]")
             log = with_retry { client.fetch_log(build_number: job[:build_number], job_id: job[:id]) }
             artifacts = with_retry { client.fetch_artifacts(build_number: job[:build_number], job_id: job[:id]) }
 
@@ -93,7 +93,7 @@ module Embulk
               job.to_json,
               log.to_json,
               artifacts.to_json,
-              job[:started_at],
+              job[:created_at],
               job[:build_number],
               build.to_json,
             ])

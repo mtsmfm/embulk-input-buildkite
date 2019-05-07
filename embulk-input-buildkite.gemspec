@@ -1,7 +1,7 @@
 
 Gem::Specification.new do |spec|
   spec.name          = "embulk-input-buildkite"
-  spec.version       = "0.4.1"
+  spec.version       = "0.5.0"
   spec.authors       = ["Fumiaki MATSUSHIMA"]
   spec.summary       = "Buildkite input plugin for Embulk"
   spec.description   = "Loads records from Buildkite."
