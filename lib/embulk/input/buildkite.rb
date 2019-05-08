@@ -93,7 +93,7 @@ module Embulk
               job.to_json,
               log.to_json,
               artifacts.to_json,
-              job[:created_at],
+              Time.parse(job[:created_at]),
               job[:build_number],
               build.to_json,
             ])
