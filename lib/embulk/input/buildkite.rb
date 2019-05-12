@@ -1,4 +1,5 @@
 require "unofficial_buildkite_client"
+require "logger"
 
 module Embulk
   module Input
@@ -111,7 +112,7 @@ module Embulk
       private
 
       def client
-        @client ||= UnofficialBuildkiteClient.new(access_token: task["token"], org_slug: task["org_slug"], pipeline_slug: task["pipeline_slug"], logger: logger)
+        @client ||= UnofficialBuildkiteClient.new(access_token: task["token"], org_slug: task["org_slug"], pipeline_slug: task["pipeline_slug"], logger: ::Logger.new(nil))
       end
 
       def logger

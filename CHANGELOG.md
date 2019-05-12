@@ -1,3 +1,7 @@
+# 0.6.0
+
+- Disable log for buildkite client
+
 # 0.5.1
 
 - Fix created_at
