@@ -81,7 +81,9 @@ module Embulk
               Thread.new do
                 begin
                   while artifact = queue.pop(true)
-                    artifact[:body] = with_retry { client.fetch_artifact(build_number: job[:build_number], job_id: job[:id], artifact_id: artifact[:id]) }
+                    artifact[:body] = with_retry {
+                      client.fetch_artifact(build_number: job[:build_number], job_id: job[:id], artifact_id: artifact[:id]).encode("utf-8", invalid: :replace, undef: :replace)
+                    }
                   end
                 rescue ThreadError
                 end

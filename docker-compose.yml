@@ -7,8 +7,9 @@ services:
       - home:/home/app
       - vendor:/vendor
       - $HOME/.gitconfig:/home/app/.gitconfig:ro
-      - $HOME/.ssh:/home/app/.netrc
+      - $HOME/.netrc:/home/app/.netrc:ro
       - $HOME/.gem:/home/app/.gem
+      - $HOME/.gem/credentials:/home/app/.gem/credentials:ro
     environment:
       BUNDLE_PATH: /vendor/bundle
     env_file: app.env

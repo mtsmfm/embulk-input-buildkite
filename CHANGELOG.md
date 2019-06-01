@@ -1,3 +1,7 @@
+# 0.7.0
+
+- Replace invalid and undef byte
+
 # 0.6.0
 
 - Disable log for buildkite client
